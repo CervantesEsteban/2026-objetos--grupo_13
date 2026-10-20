@@ -1,0 +1,103 @@
+import tpDBfinal.*
+
+
+describe "Tests del Torneo Dragon Ball Z" {
+
+    test "Un guerrero con traje común recibe daño mitigado al ser atacado" {
+        // 1 - Armar el contexto
+        const armaduraSaiyan = new TrajeComun(porcentajeProteccion = 50) 
+        const vegeta = new Guerrero(potencialOfensivo = 200, energiaInicial = 5000, traje = armaduraSaiyan)
+        const goku = new Guerrero(potencialOfensivo = 1000, energiaInicial = 5000, traje = new TrajeComun(porcentajeProteccion = 0))
+
+        // 2 - Ejecutar escenario
+        goku.atacar(vegeta)
+
+        // 3 - Validar el resultado
+        assert.equals(4950, vegeta.energia())
+    }
+
+    test "El traje de un guerrero aumenta su desgaste en 5 unidades al recibir un ataque" {
+        // 1 - Armar el contexto
+        const trajeBasico = new TrajeComun(porcentajeProteccion = 10)
+        const krillin = new Guerrero(potencialOfensivo = 50, energiaInicial = 1000, traje = trajeBasico)
+        const freezer = new Guerrero(potencialOfensivo = 500, energiaInicial = 8000, traje = new TrajeComun(porcentajeProteccion = 0))
+
+        // 2 - Ejecutar escenario
+        freezer.atacar(krillin)
+
+        // 3 - Validar el resultado
+        assert.equals(5, trajeBasico.desgaste())
+        assert.notThat(trajeBasico.estaGastado())
+    }
+
+    test "La modalidad powerIsBest del torneo selecciona y ordena a los guerreros con mayor potencial ofensivo" {
+        // 1 - Armar el contexto
+        const torneo = new Torneo(modalidad = powerIsBest)
+        const goku = new Guerrero(potencialOfensivo = 9000, energiaInicial = 5000, traje = new TrajeComun(porcentajeProteccion = 0))
+        const yamcha = new Guerrero(potencialOfensivo = 100, energiaInicial = 500, traje = new TrajeComun(porcentajeProteccion = 0))
+        const piccolo = new Guerrero(potencialOfensivo = 4000, energiaInicial = 3000, traje = new TrajeComun(porcentajeProteccion = 0))
+        
+        torneo.agregarAspirante(yamcha)
+        torneo.agregarAspirante(goku)
+        torneo.agregarAspirante(piccolo)
+
+        // 2 - Ejecutar escenario
+        const seleccionados = torneo.seleccionarParticipantes()
+
+        // 3 - Validar el resultado
+        assert.equals([goku, piccolo, yamcha], seleccionados)
+    }
+    
+    test "Un traje modularizado se considera gastado si todas sus piezas llegan a 20 de desgaste" {
+        // 1 - Armar el contexto
+        const hombrera = new Pieza(resistencia = 5, desgaste = 20)
+        const pechera = new Pieza(resistencia = 10, desgaste = 20)
+        const trajeMod = new TrajeModularizado(piezas = [hombrera, pechera])
+        
+        // 2 - Ejecutar escenario
+        const estaGastado = trajeMod.estaGastado()
+        
+        // 3 - Validar el resultado
+        assert.that(estaGastado)
+    }
+
+    test "Un traje modularizado con 10 piezas (2 gastadas) otorga 0.8 de experiencia al ser atacado" {
+        // 1 - Armar el contexto
+        const piezaSana1 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana2 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana3 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana4 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana5 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana6 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana7 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaSana8 = new Pieza(resistencia = 1, desgaste = 0)
+        const piezaGastada1 = new Pieza(resistencia = 1, desgaste = 20)
+        const piezaGastada2 = new Pieza(resistencia = 1, desgaste = 20)
+        
+        const trajeMod = new TrajeModularizado(
+            piezas = [piezaSana1, piezaSana2, piezaSana3, piezaSana4, piezaSana5, piezaSana6, piezaSana7, piezaSana8, piezaGastada1, piezaGastada2]
+        )
+        
+        const vegeta = new Guerrero(potencialOfensivo = 100, energiaInicial = 5000, traje = trajeMod)
+        const goku = new Guerrero(potencialOfensivo = 1000, energiaInicial = 5000, traje = new TrajeComun(porcentajeProteccion = 0))
+
+        // 2 - Ejecutar escenario
+        goku.atacar(vegeta)
+
+        // 3 - Validar el resultado
+        assert.equals(0.8, vegeta.experiencia())
+    }
+
+    test "Un guerrero con un traje modularizado vacío (sin piezas) es atacado y el programa no rompe" { //ejemplo caso de lista vacia 
+        // 1 - Armar el contexto
+        const trajeVacio = new TrajeModularizado(piezas = [])
+        const yamcha = new Guerrero(potencialOfensivo = 50, energiaInicial = 1000, traje = trajeVacio)
+        const cell = new Guerrero(potencialOfensivo = 2000, energiaInicial = 8000, traje = new TrajeComun(porcentajeProteccion = 0))
+
+        // 2 - Ejecutar escenario
+        cell.atacar(yamcha)
+
+        // 3 - Validar el resultado
+        assert.equals(0, yamcha.experiencia())
+    }
+}
